@@ -2,4 +2,4 @@
 
 wget https://raw.githubusercontent.com/dboltovskyi/scripts/master/process.sh
 chmod +x process.sh
-bash ./process.sh
+./process.sh
