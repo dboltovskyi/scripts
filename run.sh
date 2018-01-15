@@ -102,10 +102,10 @@ run() {
 
 	create_log_folder_for_script
 
-	./start.sh $SCRIPT --sdl-core=${SDL_FOLDER} #\
-#	  | tee >(sed -u "s/\x1b[^m]*m//g" > ${ATF_FOLDER}/${REPORT_FOLDER}/${TIMESTAMP}/TestingReports_"${ID_SFX}"/${REPORT_SCRIPT})
+	./start.sh $SCRIPT --sdl-core=${SDL_FOLDER} \
+	  | tee >(sed -u "s/\x1b[^m]*m//g" > ${ATF_FOLDER}/${REPORT_FOLDER}/${TIMESTAMP}/TestingReports_"${ID_SFX}"/${REPORT_SCRIPT})
 
-	RESULT_CODE=$(echo $?)
+	RESULT_CODE=${PIPESTATUS[0]}
 	RESULT="NOT_DEFINED"
 
 	case "${RESULT_CODE}" in
