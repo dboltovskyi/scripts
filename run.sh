@@ -201,6 +201,6 @@ status
 
 log ${LINE}
 
-if [ -f $PLAY_SOUND ] && [ -f "usr/bin/paplay" ] then
+if [ -f $PLAY_SOUND ] && [ -f "usr/bin/paplay" ]; then
   paplay $PLAY_SOUND
 fi
