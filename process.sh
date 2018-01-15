@@ -15,7 +15,7 @@ log() {
 # Handle 3rd party libs
 if [ $SDL_3RD_PARTY_LIBS = "PREINSTALLED" ]; then
   cp -r /lib/3rd_party /home/
-  NUM_OF_THREADS=4
+  NUM_OF_THREADS=$NUM_OF_THREADS_MAX
 fi
 
 # Build SDL
