@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+
+NUM_OF_THREADS=1
+
+# Set environment variables
+export THIRD_PARTY_INSTALL_PREFIX=/home/3rd_party
+export THIRD_PARTY_INSTALL_PREFIX_ARCH=$THIRD_PARTY_INSTALL_PREFIX
+export LD_LIBRARY_PATH=$THIRD_PARTY_INSTALL_PREFIX/lib:.
+export QMAKE=/opt/qt53/bin/qmake
+
+log() {
+  echo "["$(date +"%Y-%m-%d %H:%M:%S,%3N")"]" "$1$2$3"
+}
+
+# Handle 3rd party libs
+if [ $SDL_3RD_PARTY_LIBS = "PREINSTALLED" ]; then
+  cp -r /lib/3rd_party /home/
+  NUM_OF_THREADS=4
+fi
+
+# Build SDL
+log "*** Building SDL ***"
+log "SDL Repository: "$SDL_REPO
+log "SDL Branch: "$SDL_BRANCH
+log "SDL Policy: "$SDL_POLICY
+cd /home
+git clone -b $SDL_BRANCH $SDL_REPO
+mkdir b
+cd b
+cmake ../sdl_core -DUSE_DISTCC=OFF -DUSE_CCACHE=OFF -DEXTENDED_POLICY=$SDL_POLICY -DBUILD_TESTS=$SDL_TESTS
+make install -j$NUM_OF_THREADS
+cp CMakeCache.txt ./bin/
+rm -rf src
+cd /
+
+# Build ATF
+log "*** Building ATF ***"
+log "ATF Repository: "$ATF_REPO
+log "ATF Branch: "$ATF_BRANCH
+cd /home
+git clone -b $ATF_BRANCH $ATF_REPO
+cd sdl_atf
+git submodule init
+git submodule update
+make
+log "Set path to SDL interfaces in ATF Config"
+sed -i 's/config.pathToSDLInterfaces = ""/config.pathToSDLInterfaces = "\/home\/sdl_core\/src\/components\/interfaces"/g' modules/config.lua
+log "Downloading runner"
+cd /home
+git clone https://github.com/dboltovskyi/scripts
+cp ./scripts/run.sh ./sdl_atf/
+# chmod +x run.sh
+cd /
+
+# Clone test scripts
+log "*** Clonning Test Scripts ***"
+log "Scripts Repository: "$SCRIPTS_REPO
+log "Scripts Branch: "$SCRIPTS_BRANCH
+cd /home
+git clone -b $SCRIPTS_BRANCH $SCRIPTS_REPO
+cd /
+
+# Create links between test scripts and ATF
+log "*** Creating links between test scripts and ATF ***"
+cd /home/sdl_atf
+ln -s ../sdl_atf_test_scripts/files
+ln -s ../sdl_atf_test_scripts/user_modules
+ln -s ../sdl_atf_test_scripts/test_scripts
+ln -s ../sdl_atf_test_scripts/test_sets
+cd /
+
+log "*** Running test scripts ***"
+cd /home/sdl_atf
+./run.sh /home/b/bin $TARGET
+
+log "*** Copying report to the host ***"
+cd /home/sdl_atf
+cp -r TestingReportsArch/* /home/reports/
