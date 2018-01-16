@@ -12,15 +12,17 @@ PLAY_SOUND=/usr/share/sounds/freedesktop/stereo/complete.oga
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
 REPORT_FOLDER="TestingReportsArch"
 REPORT="Report.txt"
-REPORT_SCRIPT="Console.txt"
+REPORT_CONSOLE="Console.txt"
 LINE="====================================================================================================="
+
+REPORT_FOLDER=${ATF_FOLDER}/${REPORT_FOLDER}/${TIMESTAMP}
 
 log() {
 	echo "${1}${2}${3}"
 }
 
 logf() {
-	echo "${1}${2}${3}" | tee -a ${ATF_FOLDER}/${REPORT_FOLDER}/${TIMESTAMP}/${REPORT}
+	echo "${1}${2}${3}" | tee -a ${REPORT_FOLDER}/${REPORT}
 }
 
 backup() {
@@ -59,16 +61,16 @@ kill_sdl() {
 }
 
 create_log_folder() {
-	mkdir -p ${ATF_FOLDER}/$REPORT_FOLDER/$TIMESTAMP
+	mkdir -p ${REPORT_FOLDER}
 }
 
 create_log_folder_for_script() {
-	mkdir ${ATF_FOLDER}/${REPORT_FOLDER}/${TIMESTAMP}/TestingReports_"${ID_SFX}"
+	mkdir ${REPORT_FOLDER}/Script_"${ID_SFX}"
 }
 
 copy_logs() {
-	cp `find ${ATF_FOLDER}/TestingReports/ -name "*.*"` ${ATF_FOLDER}/${REPORT_FOLDER}/${TIMESTAMP}/TestingReports_"${ID_SFX}"/
-	cp ${ATF_FOLDER}/ErrorLog.txt ${ATF_FOLDER}/${REPORT_FOLDER}/${TIMESTAMP}/TestingReports_"${ID_SFX}"/
+	cp `find ${ATF_FOLDER}/TestingReports/ -name "*.*"` ${REPORT_FOLDER}/Script_"${ID_SFX}"/
+	cp ${ATF_FOLDER}/ErrorLog.txt ${REPORT_FOLDER}/Script_"${ID_SFX}"/
 }
 
 clean() {
@@ -103,7 +105,7 @@ run() {
 	create_log_folder_for_script
 
 	./start.sh $SCRIPT --sdl-core=${SDL_FOLDER} \
-	  | tee >(sed -u "s/\x1b[^m]*m//g" > ${ATF_FOLDER}/${REPORT_FOLDER}/${TIMESTAMP}/TestingReports_"${ID_SFX}"/${REPORT_SCRIPT})
+	  | tee >(sed -u "s/\x1b[^m]*m//g" > ${REPORT_FOLDER}/Script_"${ID_SFX}"/${REPORT_CONSOLE})
 
 	RESULT_CODE=${PIPESTATUS[0]}
 	RESULT="NOT_DEFINED"
