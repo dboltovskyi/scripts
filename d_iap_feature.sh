@@ -13,7 +13,7 @@ SCRIPTS_REPO=https://github.com/smartdevicelink/sdl_atf_test_scripts
 SCRIPTS_BRANCH=feature/iap2_transport_switch_tests
 TARGET=./test_sets/iAP2TransportSwitch.txt
 
-DOCKER_IMAGE=ubuntu_14.04:12
+DOCKER_IMAGE=ubuntu_14.04:10
 NUM_OF_THREADS_MAX=4
 
 log() {
@@ -23,34 +23,24 @@ log() {
 log "=== Starting Docker ================================================================================"
 log "Docker image: "$DOCKER_IMAGE
 
-DOCKER_RUN="docker run -d -it "\
-"-e LOCAL_USER_ID=$(id -u $USER) "\
-"--cap-add NET_ADMIN "\
-"--mount type=bind,source=$PWD/reports,target=/home/reports "\
-"--tmpfs /home:rw,exec,size=5242880k "\
-"$DOCKER_IMAGE"
+docker run \
+  -it \
+  --mount type=bind,source="$PWD"/reports,target=/home/reports \
+  --tmpfs /home:rw,exec,size=5242880k \
+  --cap-add NET_ADMIN \
+  -e SDL_REPO=$SDL_REPO \
+  -e SDL_BRANCH=$SDL_BRANCH \
+  -e SDL_POLICY=$SDL_POLICY \
+  -e SDL_3RD_PARTY_LIBS=$SDL_3RD_PARTY_LIBS \
+  -e SDL_TESTS=$SDL_TESTS \
+  -e ATF_REPO=$ATF_REPO \
+  -e ATF_BRANCH=$ATF_BRANCH \
+  -e SCRIPTS_REPO=$SCRIPTS_REPO \
+  -e SCRIPTS_BRANCH=$SCRIPTS_BRANCH \
+  -e TARGET=$TARGET \
+  -e NUM_OF_THREADS_MAX=$NUM_OF_THREADS_MAX \
+  -e LOCAL_USER_ID=$(id -u) \
+  --entrypoint ./s.sh \
+  $DOCKER_IMAGE
 
-DOCKER_CONTAINER=$($DOCKER_RUN)
-log "Docker container: "$DOCKER_CONTAINER
-log "----------------------------------------------------------------------------------------------------"
-
-docker exec \
-  -it $DOCKER_CONTAINER \
-  env \
-  COLUMNS=180 \
-  LINES=50 \
-  SDL_REPO=$SDL_REPO \
-  SDL_BRANCH=$SDL_BRANCH \
-  SDL_POLICY=$SDL_POLICY \
-  SDL_3RD_PARTY_LIBS=$SDL_3RD_PARTY_LIBS \
-  SDL_TESTS=$SDL_TESTS \
-  NUM_OF_THREADS_MAX=$NUM_OF_THREADS_MAX \
-  ATF_REPO=$ATF_REPO \
-  ATF_BRANCH=$ATF_BRANCH \
-  SCRIPTS_REPO=$SCRIPTS_REPO \
-  SCRIPTS_BRANCH=$SCRIPTS_BRANCH \
-  TARGET=$TARGET \
-  ./s.sh
-
-DOCKER_CONTAINER=$(docker stop $DOCKER_CONTAINER)
 log "=== Docker stopped ================================================================================="

@@ -7,7 +7,7 @@ log() {
 log "*** Downloading processing script ***"
 export HOME=/home
 cd $HOME
-wget https://raw.githubusercontent.com/dboltovskyi/scripts/master/process.sh
+wget -nv https://raw.githubusercontent.com/dboltovskyi/scripts/master/process.sh
 chmod +x process.sh
 ./process.sh
 

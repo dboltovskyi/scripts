@@ -46,7 +46,7 @@ make
 log "Set path to SDL interfaces in ATF Config"
 sed -i 's,config.pathToSDLInterfaces = "",config.pathToSDLInterfaces = "'"$HOME"'\/sdl_core\/src\/components\/interfaces",' modules/config.lua
 log "Downloading runner"
-wget https://raw.githubusercontent.com/dboltovskyi/scripts/master/run.sh
+wget -nv https://raw.githubusercontent.com/dboltovskyi/scripts/master/run.sh
 chmod +x run.sh
 cd $HOME
 
