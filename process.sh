@@ -70,7 +70,3 @@ cd $HOME
 log "*** Running test scripts ***"
 cd $HOME/sdl_atf
 ./run.sh $HOME/b/bin $TARGET
-
-log "*** Copying report to the host ***"
-cd $HOME/sdl_atf
-cp -r TestingReportsArch/* /home/reports/
