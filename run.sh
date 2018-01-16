@@ -49,7 +49,7 @@ clean_backup() {
 
 kill_sdl() {
 	sleep 0.2
-	PID="$(ps -ef | grep -e $(whoami)'.*smartDeviceLinkCore' | grep -v grep | awk '{print $2}')"
+	PID="$(ps -ef | grep -e "^$(whoami).*smartDeviceLinkCore" | grep -v grep | awk '{print $2}')"
 	if [ -n "$PID" ]; then
 	  log "SDL is running, PID: $PID"
 	  log "Killing SDL"
