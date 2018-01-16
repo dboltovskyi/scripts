@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-DOCKER_IMAGE=ubuntu_14.04:10
-
 SDL_REPO=https://github.com/smartdevicelink/sdl_core
 SDL_BRANCH=develop
 SDL_POLICY=PROPRIETARY
@@ -13,9 +11,9 @@ ATF_BRANCH=develop
 
 SCRIPTS_REPO=https://github.com/smartdevicelink/sdl_atf_test_scripts
 SCRIPTS_BRANCH=develop
-
 TARGET=./test_sets/smoke_tests.txt
 
+DOCKER_IMAGE=ubuntu_14.04:11
 NUM_OF_THREADS_MAX=4
 
 log() {
@@ -26,6 +24,7 @@ log "=== Starting Docker =======================================================
 log "Docker image: "$DOCKER_IMAGE
 
 DOCKER_RUN="docker run -d -it "\
+"-e LOCAL_USER_ID=$(id -u $USER) "\
 "--cap-add NET_ADMIN "\
 "--mount type=bind,source=$PWD/reports,target=/home/reports "\
 "--tmpfs /home:rw,exec,size=5242880k "\
