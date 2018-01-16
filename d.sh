@@ -13,7 +13,7 @@ SCRIPTS_REPO=https://github.com/smartdevicelink/sdl_atf_test_scripts
 SCRIPTS_BRANCH=develop
 TARGET=./test_sets/smoke_tests.txt
 
-DOCKER_IMAGE=ubuntu_14.04:11
+DOCKER_IMAGE=ubuntu_14.04:12
 NUM_OF_THREADS_MAX=4
 
 log() {
