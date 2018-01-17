@@ -28,6 +28,7 @@ docker run \
   --mount type=bind,source="$PWD"/reports,target=/home/reports \
   --tmpfs /home:rw,exec,size=5242880k \
   --cap-add NET_ADMIN \
+  --rm \
   -e SDL_REPO=$SDL_REPO \
   -e SDL_BRANCH=$SDL_BRANCH \
   -e SDL_POLICY=$SDL_POLICY \
