@@ -4,25 +4,63 @@
 # Usage: run.sh <path_to_sdl_bin> <path_to_scripts>
 # Instead of <path_to_scripts> <path_to_test_set> or <path_to_folder> can be used
 
-SDL_FOLDER=$1
 ATF_FOLDER=.
-RUN_TARGET=$2
-CONFIG=$3
-PLAY_SOUND=/usr/share/sounds/freedesktop/stereo/complete.oga
-TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
+SOUND_FILE=/usr/share/sounds/freedesktop/stereo/complete.oga
+SOUND_PLAYER=/usr/bin/paplay
 REPORT_FOLDER="TestingReportsArch"
-REPORT="Report.txt"
-REPORT_CONSOLE="Console.txt"
+REPORT_FILE="Report.txt"
+REPORT_FILE_CONSOLE="Console.txt"
+TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
 LINE="====================================================================================================="
 
 REPORT_FOLDER=${ATF_FOLDER}/${REPORT_FOLDER}/${TIMESTAMP}
+
+check_arguments() {
+  if ([ -z $1 ] && [ -z $2 ]) || [ $1 = "-h" ] || [ $1 = "--help" ]; then
+    echo "Usage: run.sh [SDL] [TEST_TARGET]"
+    echo "SDL - path to SDL binaries"
+    echo "TEST_TARGET - one of the following:"
+    echo "   - test script"
+    echo "   - test set"
+    echo "   - folder with test scripts (all scripts will be run recursively)"
+    echo
+    exit 0
+  fi
+
+  if [ -z $1 ]; then
+    echo "Path to SDL binaries is not defined"
+    exit 1
+  fi
+  if [ -z $2 ]; then
+    echo "Test target is not defined"
+    exit 1
+  fi
+  if [ ! -d $1 ]; then
+    echo "SDL binaries was not found"
+    exit 1
+  fi
+  if [ ! -d $2 ] && [ ! -f $2 ]; then
+    echo "Test target was not found"
+    exit 1
+  fi
+
+  SDL_FOLDER=$1
+  TEST_TARGET=$2
+
+  if [ "${SDL_FOLDER: -1}" = "/" ]; then
+    SDL_FOLDER="${SDL_FOLDER:0:-1}"
+  fi
+  if [ "${TEST_TARGET: -1}" = "/" ]; then
+    TEST_TARGET="${TEST_TARGET:0:-1}"
+  fi
+}
 
 log() {
   echo "${1}${2}${3}"
 }
 
 logf() {
-  echo "${1}${2}${3}" | tee -a ${REPORT_FOLDER}/${REPORT}
+  echo "${1}${2}${3}" | tee -a ${REPORT_FOLDER}/${REPORT_FILE}
 }
 
 backup() {
@@ -105,7 +143,7 @@ run() {
   create_log_folder_for_script
 
   ./start.sh $SCRIPT --sdl-core=${SDL_FOLDER} \
-    | tee >(sed -u "s/\x1b[^m]*m//g" > ${REPORT_FOLDER}/Script_"${ID_SFX}"/${REPORT_CONSOLE})
+    | tee >(sed -u "s/\x1b[^m]*m//g" > ${REPORT_FOLDER}/Script_"${ID_SFX}"/${REPORT_FILE_CONSOLE})
 
   RESULT_CODE=${PIPESTATUS[0]}
   RESULT="NOT_DEFINED"
@@ -140,26 +178,26 @@ process() {
   create_log_folder
 
   ID=0
-  EXT=${RUN_TARGET: -3}
+  EXT=${TEST_TARGET: -3}
   if [ $EXT = "txt" ]; then
-    NUM_OF_SCRIPTS=$(cat $RUN_TARGET | egrep -v -c '^;')
-    while read -r line
+    NUM_OF_SCRIPTS=$(cat $TEST_TARGET | egrep -v -c '^;')
+    while read -r ROW
     do
-      if [ ${line:0:1} = ";" ]; then
+      if [ ${ROW:0:1} = ";" ]; then
         continue
       fi
-      SCRIPT=$(echo $line | awk '{print $1}')
+      SCRIPT=$(echo $ROW | awk '{print $1}')
       run
-    done < "$RUN_TARGET"
+    done < "$TEST_TARGET"
   elif [ $EXT = "lua" ]; then
     NUM_OF_SCRIPTS=1
-    SCRIPT=$RUN_TARGET
+    SCRIPT=$TEST_TARGET
     run
   else
-    NUM_OF_SCRIPTS=$(find $RUN_TARGET -iname "[0-9]*.lua" | wc -l)
-    for line in $(find $RUN_TARGET -iname "[0-9]*.lua" | sort)
+    NUM_OF_SCRIPTS=$(find $TEST_TARGET -iname "[0-9]*.lua" | wc -l)
+    for ROW in $(find $TEST_TARGET -iname "[0-9]*.lua" | sort)
     do
-      SCRIPT=$line
+      SCRIPT=$ROW
       run
     done
   fi
@@ -186,10 +224,12 @@ status() {
 }
 
 play_finish_sound() {
-  if [ -f $PLAY_SOUND ] && [ -f "/usr/bin/paplay" ]; then
-    paplay $PLAY_SOUND
+  if [ -f $SOUND_PLAYER ] && [ -f $SOUND_FILE ]; then
+    $SOUND_PLAYER $SOUND_FILE
   fi
 }
+
+check_arguments $1 $2
 
 log ${LINE}
 
