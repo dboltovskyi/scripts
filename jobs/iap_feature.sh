@@ -11,9 +11,9 @@ ATF_BRANCH=develop
 
 SCRIPTS_REPO=https://github.com/smartdevicelink/sdl_atf_test_scripts
 SCRIPTS_BRANCH=feature/iap2_transport_switch_tests
-TARGET=./test_sets/smoke_tests.txt
+TARGET=./test_sets/iAP2TransportSwitch.txt
 
-DOCKER_IMAGE=ubuntu_14.04:10
+DOCKER_IMAGE=ubuntu_14.04:11
 NUM_OF_THREADS_MAX=4
 
 log() {
@@ -41,7 +41,6 @@ docker run \
   -e TARGET=$TARGET \
   -e NUM_OF_THREADS_MAX=$NUM_OF_THREADS_MAX \
   -e LOCAL_USER_ID=$(id -u) \
-  --entrypoint ./s.sh \
   $DOCKER_IMAGE
 
 log "=== Docker stopped ================================================================================="
