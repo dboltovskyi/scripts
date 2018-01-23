@@ -3,7 +3,6 @@
 SDL_REPO=https://github.com/smartdevicelink/sdl_core
 SDL_BRANCH=develop
 SDL_POLICY=PROPRIETARY
-SDL_3RD_PARTY_LIBS=BUILD # Possible: BUILD, PREINSTALLED
 SDL_TESTS=OFF # Possible: OFF, ON
 
 ATF_REPO=https://github.com/smartdevicelink/sdl_atf
@@ -32,7 +31,6 @@ docker run \
   -e SDL_REPO=$SDL_REPO \
   -e SDL_BRANCH=$SDL_BRANCH \
   -e SDL_POLICY=$SDL_POLICY \
-  -e SDL_3RD_PARTY_LIBS=$SDL_3RD_PARTY_LIBS \
   -e SDL_TESTS=$SDL_TESTS \
   -e ATF_REPO=$ATF_REPO \
   -e ATF_BRANCH=$ATF_BRANCH \

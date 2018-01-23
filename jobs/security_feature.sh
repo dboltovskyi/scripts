@@ -3,7 +3,6 @@
 SDL_REPO=https://github.com/AKalinich-Luxoft/sdl_core
 SDL_BRANCH=fix/fix_security_issues
 SDL_POLICY=PROPRIETARY
-SDL_3RD_PARTY_LIBS=PREINSTALLED # Possible: BUILD, PREINSTALLED
 SDL_TESTS=OFF # Possible: OFF, ON
 
 ATF_REPO=https://github.com/smartdevicelink/sdl_atf
@@ -13,7 +12,7 @@ SCRIPTS_REPO=https://github.com/smartdevicelink/sdl_atf_test_scripts
 SCRIPTS_BRANCH=develop
 TARGET=./test_scripts/Defects/4_5/Trigger_PTU_NO_Certificate
 
-DOCKER_IMAGE=ubuntu_14.04:11
+DOCKER_IMAGE=ubuntu_14.04:01
 NUM_OF_THREADS_MAX=4
 
 log() {
@@ -32,7 +31,6 @@ docker run \
   -e SDL_REPO=$SDL_REPO \
   -e SDL_BRANCH=$SDL_BRANCH \
   -e SDL_POLICY=$SDL_POLICY \
-  -e SDL_3RD_PARTY_LIBS=$SDL_3RD_PARTY_LIBS \
   -e SDL_TESTS=$SDL_TESTS \
   -e ATF_REPO=$ATF_REPO \
   -e ATF_BRANCH=$ATF_BRANCH \

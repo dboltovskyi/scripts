@@ -8,20 +8,11 @@ log "*** Creating local user inside the container ***"
 useradd --shell /bin/bash -u $LOCAL_USER_ID -o -c "" -m user
 export HOME=/home/user
 
-log "*** Starting processing ***"
-NUM_OF_THREADS=1
-
 # Set environment variables
 export THIRD_PARTY_INSTALL_PREFIX=$HOME/3rd_party
 export THIRD_PARTY_INSTALL_PREFIX_ARCH=$THIRD_PARTY_INSTALL_PREFIX
 export LD_LIBRARY_PATH=$THIRD_PARTY_INSTALL_PREFIX/lib:.
 export QMAKE=/opt/qt53/bin/qmake
-
-# Handle 3rd party libs
-if [ $SDL_3RD_PARTY_LIBS = "PREINSTALLED" ]; then
-  cp -r /lib/3rd_party $HOME/
-  NUM_OF_THREADS=$NUM_OF_THREADS_MAX
-fi
 
 # Build SDL
 log "*** Building SDL ***"
@@ -33,7 +24,8 @@ git clone -b $SDL_BRANCH $SDL_REPO
 mkdir b
 cd b
 cmake ../sdl_core -DUSE_DISTCC=OFF -DUSE_CCACHE=OFF -DEXTENDED_POLICY=$SDL_POLICY -DBUILD_TESTS=$SDL_TESTS
-make install -j$NUM_OF_THREADS
+make install-3rd_party_logger
+make install -j$NUM_OF_THREADS_MAX
 cp CMakeCache.txt ./bin/
 rm -rf src
 cd $HOME
