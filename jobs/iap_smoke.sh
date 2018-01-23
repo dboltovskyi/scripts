@@ -10,7 +10,7 @@ ATF_REPO=https://github.com/smartdevicelink/sdl_atf
 ATF_BRANCH=develop
 
 SCRIPTS_REPO=https://github.com/smartdevicelink/sdl_atf_test_scripts
-SCRIPTS_BRANCH=develop
+SCRIPTS_BRANCH=feature/iap2_transport_switch_tests
 TARGET=./test_sets/smoke_tests.txt
 
 DOCKER_IMAGE=ubuntu_14.04:11
