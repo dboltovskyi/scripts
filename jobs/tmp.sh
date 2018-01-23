@@ -3,7 +3,7 @@
 SDL_REPO=https://github.com/smartdevicelink/sdl_core
 SDL_BRANCH=develop
 SDL_POLICY=PROPRIETARY
-SDL_3RD_PARTY_LIBS=PREINSTALLED # Possible: BUILD, PREINSTALLED
+SDL_3RD_PARTY_LIBS=BUILD # Possible: BUILD, PREINSTALLED
 SDL_TESTS=OFF # Possible: OFF, ON
 
 ATF_REPO=https://github.com/smartdevicelink/sdl_atf
@@ -13,7 +13,7 @@ SCRIPTS_REPO=https://github.com/smartdevicelink/sdl_atf_test_scripts
 SCRIPTS_BRANCH=develop
 TARGET=./test_scripts/Smoke/Policies/001_PTU_all_flows.lua
 
-DOCKER_IMAGE=ubuntu_14.04:11
+DOCKER_IMAGE=ubuntu_14.04:01
 NUM_OF_THREADS_MAX=4
 
 log() {
