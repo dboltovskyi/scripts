@@ -23,3 +23,6 @@ ubuntu_14.04        01
 7. Create ```reports``` sub-folder
 8. Run any job (ex. ```dev_smoke.sh```)
 9. Check results in ```reports``` folder
+
+## Notes
+Container requires at most 5Gb of free RAM for the processing
