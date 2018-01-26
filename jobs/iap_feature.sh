@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 SDL_REPO=https://github.com/smartdevicelink/sdl_core
-SDL_BRANCH=feature/IAP_over_BT
+SDL_BRANCH=develop
 SDL_POLICY=PROPRIETARY
 SDL_TESTS=ON # Possible: OFF, ON
 
@@ -9,7 +9,7 @@ ATF_REPO=https://github.com/smartdevicelink/sdl_atf
 ATF_BRANCH=develop
 
 SCRIPTS_REPO=https://github.com/smartdevicelink/sdl_atf_test_scripts
-SCRIPTS_BRANCH=feature/iap2_transport_switch_tests
+SCRIPTS_BRANCH=develop
 TARGET=./test_sets/iAP2TransportSwitch.txt
 
 DOCKER_IMAGE=ubuntu_14.04:01
