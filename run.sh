@@ -13,6 +13,12 @@ REPORT_FILE_CONSOLE="Console.txt"
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
 LINE="====================================================================================================="
 
+P="\033[0;32m"
+F="\033[0;31m"
+A="\033[0;35m"
+S="\033[0;33m"
+N="\033[0m"
+
 REPORT_FOLDER=${ATF_FOLDER}/${REPORT_FOLDER}/${TIMESTAMP}
 
 check_arguments() {
@@ -56,11 +62,12 @@ check_arguments() {
 }
 
 log() {
-  echo "${1}${2}${3}"
+  echo -e "${1}${2}${3}${4}${5}${6}${7}${8}${9}"
 }
 
 logf() {
-  echo "${1}${2}${3}" | tee -a ${REPORT_FOLDER}/${REPORT_FILE}
+  echo -e "${1}${2}${3}${4}${5}${6}${7}${8}${9}" \
+   | tee >(sed -u "s/\x1b[^m]*m//g" >> ${REPORT_FOLDER}/${REPORT_FILE})
 }
 
 backup() {
@@ -132,7 +139,12 @@ run() {
   ID=$((ID+1))
   ID_SFX=$(printf "%0${#NUM_OF_SCRIPTS}d" $ID)
 
-  log "Processing script: " ${ID}"("${NUM_OF_SCRIPTS}")"
+  log "Processing script: " ${ID}"("${NUM_OF_SCRIPTS}") ["\
+    "${P}PASSED: ${#LIST_PASSED[@]}, "\
+    "${F}FAILED: ${#LIST_FAILED[@]}, "\
+    "${A}ABORTED: ${#LIST_ABORTED[@]}, "\
+    "${S}SKIPPED: ${#LIST_SKIPPED[@]}"\
+    "${N}]"
 
   kill_sdl
 
@@ -175,8 +187,6 @@ run() {
 }
 
 process() {
-  create_log_folder
-
   ID=0
   EXT=${TEST_TARGET: -3}
   if [ $EXT = "txt" ]; then
@@ -205,18 +215,18 @@ process() {
 
 status() {
   logf "TOTAL: " $ID
-  logf "PASSED: " ${#LIST_PASSED[@]}
-  logf "ABORTED: " ${#LIST_ABORTED[@]}
-  for i in ${LIST_ABORTED[@]}
-  do
-    logf $i
-  done
-  logf "FAILED: " ${#LIST_FAILED[@]}
+  logf "${P}PASSED: " ${#LIST_PASSED[@]} "${N}"
+  logf "${F}FAILED: " ${#LIST_FAILED[@]} "${N}"
   for i in ${LIST_FAILED[@]}
   do
     logf $i
   done
-  logf "SKIPPED: " ${#LIST_SKIPPED[@]}
+  logf "${A}ABORTED: " ${#LIST_ABORTED[@]} "${N}"
+  for i in ${LIST_ABORTED[@]}
+  do
+    logf $i
+  done
+  logf "${S}SKIPPED: " ${#LIST_SKIPPED[@]} "${N}"
   for i in ${LIST_SKIPPED[@]}
   do
     logf $i
@@ -229,9 +239,20 @@ play_finish_sound() {
   fi
 }
 
+log_test_run_details() {
+  logf "SDL: " $SDL_FOLDER
+  logf "Test target: " $TEST_TARGET
+}
+
 check_arguments $1 $2
 
-log ${LINE}
+create_log_folder
+
+logf ${LINE}
+
+log_test_run_details
+
+logf ${LINE}
 
 backup
 
@@ -247,6 +268,6 @@ log ${LINE}
 
 status
 
-log ${LINE}
+logf ${LINE}
 
 play_finish_sound
