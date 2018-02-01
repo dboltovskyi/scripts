@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-SDL_REPO=https://github.com/AKalinich-Luxoft/sdl_core
-SDL_BRANCH=fix/fix_security_issues
+SDL_REPO=https://github.com/smartdevicelink/sdl_core
+SDL_BRANCH=develop
 SDL_POLICY=PROPRIETARY
 SDL_TESTS=OFF # Possible: OFF, ON
 
