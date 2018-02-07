@@ -20,7 +20,10 @@ log "SDL Repository: "$SDL_REPO
 log "SDL Branch: "$SDL_BRANCH
 log "SDL Policy: "$SDL_POLICY
 cd $HOME
-git clone -b $SDL_BRANCH $SDL_REPO
+git clone $SDL_REPO --depth 100 --branch develop
+cd sdl_core
+git checkout $SDL_BRANCH --quiet
+cd ..
 mkdir b
 cd b
 cmake ../sdl_core -DUSE_DISTCC=OFF -DUSE_CCACHE=OFF -DEXTENDED_POLICY=$SDL_POLICY -DBUILD_TESTS=$SDL_TESTS

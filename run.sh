@@ -4,6 +4,7 @@
 # Usage: run.sh <path_to_sdl_bin> <path_to_scripts>
 # Instead of <path_to_scripts> <path_to_test_set> or <path_to_folder> can be used
 
+# API_FOLDER=../sdl_core/src/components/interfaces
 ATF_FOLDER=.
 SOUND_FILE=/usr/share/sounds/freedesktop/stereo/complete.oga
 SOUND_PLAYER=/usr/bin/paplay
@@ -154,7 +155,11 @@ run() {
 
   create_log_folder_for_script
 
-  ./start.sh $SCRIPT --sdl-core=${SDL_FOLDER} \
+  if [ ! -z $API_FOLDER ]; then
+    SDL_API="--sdl-interfaces=${API_FOLDER}"
+  fi
+
+  ./start.sh $SCRIPT --sdl-core=${SDL_FOLDER} ${SDL_API}\
     | tee >(sed -u "s/\x1b[^m]*m//g" > ${REPORT_FOLDER}/Script_"${ID_SFX}"/${REPORT_FILE_CONSOLE})
 
   RESULT_CODE=${PIPESTATUS[0]}
