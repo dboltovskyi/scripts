@@ -4,7 +4,6 @@
 # Usage: run.sh <path_to_sdl_bin> <path_to_scripts>
 # Instead of <path_to_scripts> <path_to_test_set> or <path_to_folder> can be used
 
-# API_FOLDER=../sdl_core/src/components/interfaces
 ATF_FOLDER=.
 SOUND_FILE=/usr/share/sounds/freedesktop/stereo/complete.oga
 SOUND_PLAYER=/usr/bin/paplay
