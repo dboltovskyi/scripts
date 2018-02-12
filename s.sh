@@ -20,10 +20,7 @@ log "SDL Repository: "$SDL_REPO
 log "SDL Branch: "$SDL_BRANCH
 log "SDL Policy: "$SDL_POLICY
 cd $HOME
-git clone $SDL_REPO --depth 100 --branch develop
-cd sdl_core
-git checkout $SDL_BRANCH --quiet
-cd ..
+git clone $SDL_REPO --branch $SDL_BRANCH --depth 1
 mkdir b
 cd b
 cmake ../sdl_core -DUSE_DISTCC=OFF -DUSE_CCACHE=OFF -DEXTENDED_POLICY=$SDL_POLICY -DBUILD_TESTS=$SDL_TESTS
@@ -38,7 +35,7 @@ log "*** Building ATF ***"
 log "ATF Repository: "$ATF_REPO
 log "ATF Branch: "$ATF_BRANCH
 cd $HOME
-git clone -b $ATF_BRANCH $ATF_REPO
+git clone $ATF_REPO --branch $ATF_BRANCH --depth 1
 cd sdl_atf
 git submodule init
 git submodule update
@@ -55,7 +52,7 @@ log "*** Clonning Test Scripts ***"
 log "Scripts Repository: "$SCRIPTS_REPO
 log "Scripts Branch: "$SCRIPTS_BRANCH
 cd $HOME
-git clone -b $SCRIPTS_BRANCH $SCRIPTS_REPO
+git clone $SCRIPTS_REPO --branch $SCRIPTS_BRANCH --depth 1
 cd $HOME
 
 # Create links between test scripts and ATF
