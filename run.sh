@@ -24,12 +24,13 @@ REPORT_FOLDER=${ATF_FOLDER}/${REPORT_FOLDER}/${TIMESTAMP}
 
 check_arguments() {
   if ([ -z $1 ] && [ -z $2 ]) || [ $1 = "-h" ] || [ $1 = "--help" ]; then
-    echo "Usage: run.sh [SDL] [TEST_TARGET]"
+    echo "Usage: run.sh [SDL] [TEST_TARGET] [SDL_API]"
     echo "SDL - path to SDL binaries"
     echo "TEST_TARGET - one of the following:"
     echo "   - test script"
     echo "   - test set"
     echo "   - folder with test scripts (all scripts will be run recursively)"
+    echo "SDL_API - path to SDL APIs"
     echo
     exit 0
   fi
@@ -50,15 +51,23 @@ check_arguments() {
     echo "Test target was not found"
     exit 1
   fi
+  if [ ! -z $3 ] && [ ! -d $3 ]; then
+    echo "SDL APIs was not found"
+    exit 1
+  fi
 
   SDL_FOLDER=$1
   TEST_TARGET=$2
+  API_FOLDER=$3
 
   if [ "${SDL_FOLDER: -1}" = "/" ]; then
     SDL_FOLDER="${SDL_FOLDER:0:-1}"
   fi
   if [ "${TEST_TARGET: -1}" = "/" ]; then
     TEST_TARGET="${TEST_TARGET:0:-1}"
+  fi
+  if [ "${API_FOLDER: -1}" = "/" ]; then
+    API_FOLDER="${API_FOLDER:0:-1}"
   fi
 }
 
@@ -249,7 +258,7 @@ log_test_run_details() {
   logf "Test target: " $TEST_TARGET
 }
 
-check_arguments $1 $2
+check_arguments $1 $2 $3
 
 create_log_folder
 

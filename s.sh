@@ -40,8 +40,6 @@ cd sdl_atf
 git submodule init
 git submodule update
 make
-log "Set path to SDL interfaces in ATF Config"
-sed -i 's,config.pathToSDLInterfaces = "",config.pathToSDLInterfaces = "'"$HOME"'\/sdl_core\/src\/components\/interfaces",' modules/config.lua
 log "Downloading runner"
 wget -nv https://raw.githubusercontent.com/dboltovskyi/scripts/master/run.sh
 chmod +x run.sh
@@ -66,7 +64,7 @@ cd $HOME
 
 log "*** Running test scripts ***"
 cd $HOME/sdl_atf
-./run.sh $HOME/b/bin $TARGET
+./run.sh $HOME/b/bin $TARGET ../sdl_core/src/components/interfaces
 
 log "*** Copying report to the host ***"
 gosu user cp -r $HOME/sdl_atf/TestingReportsArch/* /home/reports/
