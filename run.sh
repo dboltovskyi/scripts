@@ -232,17 +232,17 @@ status() {
   logf "${F}FAILED: " ${#LIST_FAILED[@]} "${N}"
   for i in ${LIST_FAILED[@]}
   do
-    logf $i
+    logf "${i/:/: }"
   done
   logf "${A}ABORTED: " ${#LIST_ABORTED[@]} "${N}"
   for i in ${LIST_ABORTED[@]}
   do
-    logf $i
+    logf "${i/:/: }"
   done
   logf "${S}SKIPPED: " ${#LIST_SKIPPED[@]} "${N}"
   for i in ${LIST_SKIPPED[@]}
   do
-    logf $i
+    logf "${i/:/: }"
   done
 }
 
