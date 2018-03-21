@@ -11,6 +11,7 @@ REPORT_FOLDER="TestingReportsArch"
 REPORT_FILE="Report.txt"
 REPORT_FILE_CONSOLE="Console.txt"
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
+CORE_DUMP_FOLDER=/tmp/corefiles
 LINE="====================================================================================================="
 
 P="\033[0;32m"
@@ -116,6 +117,7 @@ kill_sdl() {
 
 create_log_folder() {
   mkdir -p ${REPORT_FOLDER}
+  mkdir -p ${CORE_DUMP_FOLDER}
 }
 
 create_log_folder_for_script() {
@@ -125,6 +127,11 @@ create_log_folder_for_script() {
 copy_logs() {
   cp `find ${ATF_FOLDER}/TestingReports/ -name "*.*"` ${REPORT_FOLDER}/Script_"${ID_SFX}"/
   cp ${ATF_FOLDER}/ErrorLog.txt ${REPORT_FOLDER}/Script_"${ID_SFX}"/
+  NUM_OF_DUMP_FILES=$(ls -1 $CORE_DUMP_FOLDER | wc -l)
+  if [ $RESULT = "ABORTED" ] && [ ! $NUM_OF_DUMP_FILES -eq 0 ]; then
+    chmod 644 ${CORE_DUMP_FOLDER}/*
+    cp ${CORE_DUMP_FOLDER}/* ${REPORT_FOLDER}/Script_"${ID_SFX}"/
+  fi
 }
 
 clean() {
@@ -140,6 +147,8 @@ clean() {
   rm -f -r ${SDL_FOLDER}/storage
   rm -f -r ${SDL_FOLDER}/ivsu_cache
   rm -f -r ${SDL_FOLDER}/../sdl_bin_bk
+  log "Cleaning up folder with core dumps"
+  rm -f -r ${CORE_DUMP_FOLDER}/*
 }
 
 run() {
