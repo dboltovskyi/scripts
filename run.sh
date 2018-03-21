@@ -130,6 +130,10 @@ copy_logs() {
   NUM_OF_DUMP_FILES=$(ls -1 $CORE_DUMP_FOLDER | wc -l)
   if [ $RESULT = "ABORTED" ] && [ ! $NUM_OF_DUMP_FILES -eq 0 ]; then
     chmod 644 ${CORE_DUMP_FOLDER}/*
+    for DUMP_FILE in $(ls -1 $CORE_DUMP_FOLDER/*)
+    do
+      gzip $DUMP_FILE
+    done
     cp ${CORE_DUMP_FOLDER}/* ${REPORT_FOLDER}/Script_"${ID_SFX}"/
   fi
 }
