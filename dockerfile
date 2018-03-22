@@ -39,6 +39,6 @@ RUN cd /usr/local/share/ca-certificates \
 RUN wget -nv -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/1.10/gosu-amd64" \
   && chmod +x /usr/local/bin/gosu
 
-ADD s.sh entrypoint.sh
+ADD s.sh /
 
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["zsh"]
