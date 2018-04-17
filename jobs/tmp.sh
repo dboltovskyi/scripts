@@ -8,9 +8,9 @@ SDL_TESTS=OFF # Possible: OFF, ON
 ATF_REPO=https://github.com/smartdevicelink/sdl_atf
 ATF_BRANCH=develop
 
-SCRIPTS_REPO=https://github.com/smartdevicelink/sdl_atf_test_scripts
-SCRIPTS_BRANCH=develop
-TARGET=./test_scripts/Smoke/Policies/001_PTU_all_flows.lua
+SCRIPTS_REPO=https://github.com/dboltovskyi/sdl_atf_test_scripts
+SCRIPTS_BRANCH=core_dump
+TARGET=./test_sets/core_dump_1000_2.txt
 
 DOCKER_IMAGE=ubuntu_14.04:01
 NUM_OF_THREADS_MAX=4
@@ -25,7 +25,7 @@ log "Docker image: "$DOCKER_IMAGE
 docker run \
   -it \
   --mount type=bind,source="$PWD"/reports,target=/home/reports \
-  --tmpfs /home:rw,exec,size=5242880k \
+  --tmpfs /home:rw,exec,size=10485760k \
   --cap-add NET_ADMIN \
   --rm \
   -e SDL_REPO=$SDL_REPO \
@@ -39,6 +39,7 @@ docker run \
   -e TARGET=$TARGET \
   -e NUM_OF_THREADS_MAX=$NUM_OF_THREADS_MAX \
   -e LOCAL_USER_ID=$(id -u) \
-  $DOCKER_IMAGE
+  $DOCKER_IMAGE \
+  -c ./s.sh
 
 log "=== Docker stopped ================================================================================="

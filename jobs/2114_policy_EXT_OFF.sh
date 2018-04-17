@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 
 SDL_REPO=https://github.com/smartdevicelink/sdl_core
-SDL_BRANCH=develop
-SDL_POLICY=PROPRIETARY
-SDL_TESTS=ON # Possible: OFF, ON
+SDL_BRANCH=hotfix/invalid_ptu_loop
+SDL_POLICY=EXTERNAL_PROPRIETARY
+SDL_TESTS=OFF # Possible: OFF, ON
 
 ATF_REPO=https://github.com/smartdevicelink/sdl_atf
 ATF_BRANCH=develop
 
-SCRIPTS_REPO=https://github.com/smartdevicelink/sdl_atf_test_scripts
+SCRIPTS_REPO=https://github.com/smartdevicelink/sdl_atf_test_scripts/
 SCRIPTS_BRANCH=develop
-TARGET=./test_sets/iAP2TransportSwitch.txt
+TARGET=./test_sets/External_Consent_Status_OFF.txt
 
 DOCKER_IMAGE=ubuntu_14.04:01
 NUM_OF_THREADS_MAX=4
@@ -25,7 +25,7 @@ log "Docker image: "$DOCKER_IMAGE
 docker run \
   -it \
   --mount type=bind,source="$PWD"/reports,target=/home/reports \
-  --tmpfs /home:rw,exec,size=5242880k \
+  --tmpfs /home:rw,exec,size=10485760k \
   --cap-add NET_ADMIN \
   --rm \
   -e SDL_REPO=$SDL_REPO \
@@ -39,6 +39,7 @@ docker run \
   -e TARGET=$TARGET \
   -e NUM_OF_THREADS_MAX=$NUM_OF_THREADS_MAX \
   -e LOCAL_USER_ID=$(id -u) \
-  $DOCKER_IMAGE
+  $DOCKER_IMAGE \
+  -c ./s.sh
 
 log "=== Docker stopped ================================================================================="

@@ -39,6 +39,7 @@ docker run \
   -e TARGET=$TARGET \
   -e NUM_OF_THREADS_MAX=$NUM_OF_THREADS_MAX \
   -e LOCAL_USER_ID=$(id -u) \
-  $DOCKER_IMAGE
+  $DOCKER_IMAGE \
+  -c ./s.sh
 
 log "=== Docker stopped ================================================================================="
