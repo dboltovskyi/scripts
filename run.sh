@@ -1,15 +1,14 @@
 #!/usr/bin/env bash
 
 # Script that allows to run multiple .lua scripts at once
-# Usage: run.sh <path_to_sdl_bin> <path_to_scripts>
-# Instead of <path_to_scripts> <path_to_test_set> or <path_to_folder> can be used
 
 ATF_FOLDER=.
 SOUND_FILE=/usr/share/sounds/freedesktop/stereo/complete.oga
 SOUND_PLAYER=/usr/bin/paplay
-REPORT_FOLDER="TestingReportsArch"
-REPORT_FILE="Report.txt"
-REPORT_FILE_CONSOLE="Console.txt"
+ATF_REPORT_FOLDER=./TestingReports
+REPORT_FOLDER=./TestingReportsArch
+REPORT_FILE=Report.txt
+REPORT_FILE_CONSOLE=Console.txt
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
 CORE_DUMP_FOLDER=/tmp/corefiles
 LINE="====================================================================================================="
@@ -20,16 +19,16 @@ A="\033[0;35m"
 S="\033[0;33m"
 N="\033[0m"
 
-REPORT_FOLDER=${ATF_FOLDER}/${REPORT_FOLDER}/${TIMESTAMP}
+REPORT_FOLDER=${REPORT_FOLDER}/${TIMESTAMP}
 
 check_arguments() {
   if ([ -z $1 ] && [ -z $2 ]) || [ $1 = "-h" ] || [ $1 = "--help" ]; then
-    echo "Usage: run.sh [SDL] [TEST_TARGET] [SDL_API]"
+    echo "Usage: run.sh SDL TEST_TARGET [SDL_API]"
     echo "SDL - path to SDL binaries"
     echo "TEST_TARGET - one of the following:"
     echo "   - test script"
     echo "   - test set"
-    echo "   - folder with test scripts (all scripts will be run recursively)"
+    echo "   - folder with test scripts (which will be run recursively)"
     echo "SDL_API - path to SDL APIs"
     echo
     exit 0
@@ -56,9 +55,9 @@ check_arguments() {
     exit 1
   fi
 
-  SDL_FOLDER=$1
-  TEST_TARGET=$2
-  API_FOLDER=$3
+  SDL_FOLDER=$(readlink -m $1)
+  TEST_TARGET=$(readlink -m $2)
+  API_FOLDER=$(readlink -m $3)
 
   if [ "${SDL_FOLDER: -1}" = "/" ]; then
     SDL_FOLDER="${SDL_FOLDER:0:-1}"
@@ -69,6 +68,9 @@ check_arguments() {
   if [ "${API_FOLDER: -1}" = "/" ]; then
     API_FOLDER="${API_FOLDER:0:-1}"
   fi
+
+  ATF_REPORT_FOLDER=$(readlink -m $ATF_REPORT_FOLDER)
+  REPORT_FOLDER=$(readlink -m $REPORT_FOLDER)
 }
 
 log() {
@@ -77,7 +79,7 @@ log() {
 
 logf() {
   echo -e "${1}${2}${3}${4}${5}${6}${7}${8}${9}" \
-   | tee >(sed -u "s/\x1b[^m]*m//g" >> ${REPORT_FOLDER}/${REPORT_FILE})
+   | tee >(sed "s/\x1b[^m]*m//g" >> ${REPORT_FOLDER}/${REPORT_FILE})
 }
 
 backup() {
@@ -125,7 +127,7 @@ create_log_folder_for_script() {
 }
 
 copy_logs() {
-  cp `find ${ATF_FOLDER}/TestingReports/ -name "*.*"` ${REPORT_FOLDER}/Script_"${ID_SFX}"/
+  cp `find ${ATF_REPORT_FOLDER} -name "*.*"` ${REPORT_FOLDER}/Script_"${ID_SFX}"/
   cp ${ATF_FOLDER}/ErrorLog.txt ${REPORT_FOLDER}/Script_"${ID_SFX}"/
   NUM_OF_DUMP_FILES=$(ls -1 $CORE_DUMP_FOLDER | wc -l)
   if [ $RESULT = "ABORTED" ] && [ ! $NUM_OF_DUMP_FILES -eq 0 ]; then
@@ -143,16 +145,16 @@ clean() {
   rm -f ${ATF_FOLDER}/ErrorLog.txt
   rm -f ${ATF_FOLDER}/sdl.pid
   rm -f ${ATF_FOLDER}/mobile*.out
-  rm -f -r ${ATF_FOLDER}/TestingReports
+  rm -rf ${ATF_REPORT_FOLDER}
   log "Cleaning up SDL folder"
   rm -f ${SDL_FOLDER}/*.log
   rm -f ${SDL_FOLDER}/app_info.dat
   rm -f ${SDL_FOLDER}/policy.sqlite
-  rm -f -r ${SDL_FOLDER}/storage
-  rm -f -r ${SDL_FOLDER}/ivsu_cache
-  rm -f -r ${SDL_FOLDER}/../sdl_bin_bk
+  rm -rf ${SDL_FOLDER}/storage
+  rm -rf ${SDL_FOLDER}/ivsu_cache
+  rm -rf ${SDL_FOLDER}/../sdl_bin_bk
   log "Cleaning up folder with core dumps"
-  rm -f -r ${CORE_DUMP_FOLDER}/*
+  rm -rf ${CORE_DUMP_FOLDER}/*
 }
 
 run() {
@@ -177,11 +179,20 @@ run() {
   create_log_folder_for_script
 
   if [ ! -z $API_FOLDER ]; then
-    SDL_API="--sdl-interfaces=${API_FOLDER}"
+    API_FOLDER_P="--sdl-interfaces=${API_FOLDER}"
   fi
 
-  ./start.sh $SCRIPT --sdl-core=${SDL_FOLDER} ${SDL_API}\
-    | tee >(sed -u "s/\x1b[^m]*m//g" > ${REPORT_FOLDER}/Script_"${ID_SFX}"/${REPORT_FILE_CONSOLE})
+  if [ ! -z $ATF_REPORT_FOLDER ]; then
+    ATF_REPORT_FOLDER_P="--report-path=${ATF_REPORT_FOLDER}"
+  fi
+
+  SDL_FOLDER_P="--sdl-core=${SDL_FOLDER}"
+
+  ./start.sh $SCRIPT \
+    ${SDL_FOLDER_P} \
+    ${API_FOLDER_P} \
+    ${ATF_REPORT_FOLDER_P} \
+    | tee >(sed "s/\x1b[^m]*m//g" > ${REPORT_FOLDER}/Script_"${ID_SFX}"/${REPORT_FILE_CONSOLE})
 
   RESULT_CODE=${PIPESTATUS[0]}
   RESULT="NOT_DEFINED"
