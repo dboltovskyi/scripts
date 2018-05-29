@@ -106,15 +106,26 @@ clean_backup() {
   rm -f ${SDL_FOLDER}/_log4cxx.properties
 }
 
+
+await() {
+  for pid in "$@"; do
+    while kill -0 "$pid" > /dev/null 2>&1 
+    do
+      sleep 0.5
+    done
+  done
+}
+
 kill_sdl() {
-  sleep 0.2
-  PID="$(ps -ef | grep -e "^$(whoami).*smartDeviceLinkCore" | grep -v grep | awk '{print $2}')"
+  local process_name=smartDeviceLinkCore
+  local PID=$(pgrep --full $process_name)
   if [ -n "$PID" ]; then
     log "SDL is running, PID: $PID"
-    log "Killing SDL"
-    kill -9 $PID
+    log "Terminating SDL.."
+    kill -s SIGTERM $PID
+    await $PID
+    log "SDL have been terminated."
   fi
-  sleep 0.2
 }
 
 create_log_folder() {
@@ -225,7 +236,7 @@ run() {
 
 process() {
   ID=0
-  EXT=${TEST_TARGET: -3}
+  local EXT=${TEST_TARGET: -3}
   if [ $EXT = "txt" ]; then
     NUM_OF_SCRIPTS=$(cat $TEST_TARGET | egrep -v -c '^;')
     while read -r ROW
