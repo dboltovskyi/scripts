@@ -106,6 +106,7 @@ clean_backup() {
   rm -f ${SDL_FOLDER}/_log4cxx.properties
 }
 
+
 await() {
   local TIMEOUT=${@:1:1}
   local PIDS=${@:2}
@@ -143,7 +144,7 @@ await() {
 }
 
 kill_sdl() {
-  local PROCESS_NAME=smartDeviceLinkCore
+  local PROCESS_NAME=SmartDeviceLink
   local PID=$(pgrep --full $PROCESS_NAME)
   if [ -n "$PID" ]; then
     log "'$PROCESS_NAME' is running, PID: $PID"
