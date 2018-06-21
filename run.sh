@@ -106,25 +106,52 @@ clean_backup() {
   rm -f ${SDL_FOLDER}/_log4cxx.properties
 }
 
-
 await() {
-  for pid in "$@"; do
-    while kill -0 "$pid" > /dev/null 2>&1 
+  local TIMEOUT=${@:1:1}
+  local PIDS=${@:2}
+  local TIME_LEFT=0
+  while true
+  do
+    local TIMEOUT_EXPIRED=$(( $TIMEOUT < $TIME_LEFT ))
+    for PID in ${PIDS}
     do
-      sleep 0.5
+      if ! kill -0 ${PID} &>/dev/null
+      then
+        PIDS=`echo ${PIDS} | sed -e "s/${PID}//g"`
+      fi
     done
-  done
+    
+    if [ -z ${PIDS} ]
+    then
+      echo "Done: ${PIDS}"
+      return 0
+    fi
+     
+    if ! (( TIMEOUT_EXPIRED ))
+    then
+      TIME_LEFT=$(( TIME_LEFT + 1 ))
+      sleep 1
+    else
+      echo "Timeout ($TIMEOUT sec) expired. Force killing: ${PIDS} .."
+      for PID in ${PIDS}
+      do
+        kill -9 ${PID}
+        sleep 0.5
+      done
+    fi
+  done   
 }
 
 kill_sdl() {
-  local process_name=smartDeviceLinkCore
-  local PID=$(pgrep --full $process_name)
+  local PROCESS_NAME=smartDeviceLinkCore
+  local PID=$(pgrep --full $PROCESS_NAME)
   if [ -n "$PID" ]; then
-    log "SDL is running, PID: $PID"
-    log "Terminating SDL.."
+    log "'$PROCESS_NAME' is running, PID: $PID"
+    log "Polite terminating '$PROCESS_NAME'.."
     kill -s SIGTERM $PID
-    await $PID
-    log "SDL have been terminated."
+    local TERMINATE_TIMEOUT=5 # sec
+    await $TERMINATE_TIMEOUT $PID
+    log "'$PROCESS_NAME' have been terminated."
   fi
 }
 
