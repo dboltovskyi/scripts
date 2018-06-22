@@ -5,8 +5,8 @@
 ATF_FOLDER=.
 SOUND_FILE=/usr/share/sounds/freedesktop/stereo/complete.oga
 SOUND_PLAYER=/usr/bin/paplay
-ATF_REPORT_FOLDER=./TestingReports
-REPORT_FOLDER=./TestingReportsArch
+ATF_REPORT_FOLDER=~/ramdrv/TestingReports
+REPORT_FOLDER=~/ramdrv/TestingReportsArch
 REPORT_FILE=Report.txt
 REPORT_FILE_CONSOLE=Console.txt
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
@@ -22,15 +22,22 @@ N="\033[0m"
 REPORT_FOLDER=${REPORT_FOLDER}/${TIMESTAMP}
 
 check_arguments() {
-  if ([ -z $1 ] && [ -z $2 ]) || [ $1 = "-h" ] || [ $1 = "--help" ]; then
-    echo "Usage: run.sh SDL TEST_TARGET [SDL_API]"
-    echo "SDL - path to SDL binaries"
+  if ([ -z $1 ] && [ -z $2 ] && [ -z $3 ]) || [ $1 = "-h" ] || [ $1 = "--help" ]; then
+    echo "Bash script that allows to run multiple .lua test scripts at once"
+    echo "It also does auxiliary actions:"
+    echo "   - clean up SDL and ATF folders before running of each script"
+    echo "   - backup and restore SDL important files"
+    echo "   - create reports with all required logs"
+    echo "Usage: run.sh SDL_BIN SDL_API TEST_TARGET"
+    echo "SDL_BIN - path to SDL binaries"
+    echo "SDL_API - path to SDL APIs"
     echo "TEST_TARGET - one of the following:"
     echo "   - test script"
     echo "   - test set"
-    echo "   - folder with test scripts (which will be run recursively)"
-    echo "SDL_API - path to SDL APIs"
-    echo
+    echo "   - folder with test scripts"
+    echo "Notes:"
+    echo "   - only scripts which name starts with number will be taken into account (e.g. 001, 002 etc.)"
+    echo "   - In case if folder is specified scripts will be run recursively"
     exit 0
   fi
 
@@ -39,6 +46,10 @@ check_arguments() {
     exit 1
   fi
   if [ -z $2 ]; then
+    echo "Path to SDL APIs is not defined"
+    exit 1
+  fi
+  if [ -z $3 ]; then
     echo "Test target is not defined"
     exit 1
   fi
@@ -46,27 +57,27 @@ check_arguments() {
     echo "SDL binaries was not found"
     exit 1
   fi
-  if [ ! -d $2 ] && [ ! -f $2 ]; then
-    echo "Test target was not found"
+  if [ ! -z $2 ] && [ ! -d $2 ]; then
+    echo "SDL APIs was not found"
     exit 1
   fi
-  if [ ! -z $3 ] && [ ! -d $3 ]; then
-    echo "SDL APIs was not found"
+  if [ ! -d $3 ] && [ ! -f $3 ]; then
+    echo "Test target was not found"
     exit 1
   fi
 
   SDL_FOLDER=$(readlink -m $1)
-  TEST_TARGET=$(readlink -m $2)
-  API_FOLDER=$(readlink -m $3)
+  API_FOLDER=$(readlink -m $2)
+  TEST_TARGET=$(readlink -m $3)
 
   if [ "${SDL_FOLDER: -1}" = "/" ]; then
     SDL_FOLDER="${SDL_FOLDER:0:-1}"
   fi
-  if [ "${TEST_TARGET: -1}" = "/" ]; then
-    TEST_TARGET="${TEST_TARGET:0:-1}"
-  fi
   if [ "${API_FOLDER: -1}" = "/" ]; then
     API_FOLDER="${API_FOLDER:0:-1}"
+  fi
+  if [ "${TEST_TARGET: -1}" = "/" ]; then
+    TEST_TARGET="${TEST_TARGET:0:-1}"
   fi
 
   ATF_REPORT_FOLDER=$(readlink -m $ATF_REPORT_FOLDER)
@@ -106,15 +117,29 @@ clean_backup() {
   rm -f ${SDL_FOLDER}/_log4cxx.properties
 }
 
+
+await() {
+  for PID in "$@"; do
+    while kill -0 "$PID" > /dev/null 2>&1
+    do
+      sleep 0.5
+    done
+  done
+}
+
 kill_sdl() {
-  sleep 0.2
-  PID="$(ps -ef | grep -e "^$(whoami).*smartDeviceLinkCore" | grep -v grep | awk '{print $2}')"
-  if [ -n "$PID" ]; then
-    log "SDL is running, PID: $PID"
-    log "Killing SDL"
-    kill -9 $PID
-  fi
-  sleep 0.2
+  local PROCESS_NAME=smartDeviceLinkCore
+  local PIDS=$(ps -ef | grep -e "^$(whoami).*$PROCESS_NAME" | grep -v grep | awk '{print $2}')
+  for PID in $PIDS
+  do
+    if [ ! -z $(pstree -sg $PID | head -n 1 | grep -v docker) ]; then
+      log "'$PROCESS_NAME' is running, PID: $PID"
+      log "Terminating '$PROCESS_NAME'.."
+      kill -s SIGTERM $PID
+      await $PID
+      log "'$PROCESS_NAME' have been terminated."
+    fi
+  done
 }
 
 create_log_folder() {
@@ -129,7 +154,7 @@ create_log_folder_for_script() {
 copy_logs() {
   cp `find ${ATF_REPORT_FOLDER} -name "*.*"` ${REPORT_FOLDER}/Script_"${ID_SFX}"/
   cp ${ATF_FOLDER}/ErrorLog.txt ${REPORT_FOLDER}/Script_"${ID_SFX}"/
-  NUM_OF_DUMP_FILES=$(ls -1 $CORE_DUMP_FOLDER | wc -l)
+  local NUM_OF_DUMP_FILES=$(ls -1 $CORE_DUMP_FOLDER | wc -l)
   if [ $RESULT = "ABORTED" ] && [ ! $NUM_OF_DUMP_FILES -eq 0 ]; then
     chmod 644 ${CORE_DUMP_FOLDER}/*
     for DUMP_FILE in $(ls -1 $CORE_DUMP_FOLDER/*)
@@ -179,14 +204,14 @@ run() {
   create_log_folder_for_script
 
   if [ ! -z $API_FOLDER ]; then
-    API_FOLDER_P="--sdl-interfaces=${API_FOLDER}"
+    local API_FOLDER_P="--sdl-interfaces=${API_FOLDER}"
   fi
 
   if [ ! -z $ATF_REPORT_FOLDER ]; then
-    ATF_REPORT_FOLDER_P="--report-path=${ATF_REPORT_FOLDER}"
+    local ATF_REPORT_FOLDER_P="--report-path=${ATF_REPORT_FOLDER}"
   fi
 
-  SDL_FOLDER_P="--sdl-core=${SDL_FOLDER}"
+  local SDL_FOLDER_P="--sdl-core=${SDL_FOLDER}"
 
   ./start.sh $SCRIPT \
     ${SDL_FOLDER_P} \
