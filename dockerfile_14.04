@@ -1,0 +1,55 @@
+FROM ubuntu:trusty
+
+RUN apt-get update
+
+RUN apt-get install -y git
+
+RUN apt-get install -y wget
+
+RUN apt-get install -y zsh \
+  && chsh -s $(which zsh) \
+  && bash -c "$(wget https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"
+
+RUN apt-get install -y software-properties-common python-software-properties
+
+RUN add-apt-repository -y ppa:beineri/opt-qt532-trusty
+
+RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test
+
+RUN cd /usr/local/share/ca-certificates \
+  && mkdir lux \
+  && cd lux \
+  && wget -nv "http://cert.luxoft.com/Luxoft-Root-CA.crt" \
+  && update-ca-certificates
+
+RUN apt-get update
+
+RUN apt-get -q -y install cmake gcc-4.9 g++-4.9 libssl-dev libbluetooth3 libbluetooth-dev libusb-1.0-0-dev \
+  libudev-dev bluez-tools sqlite3 libsqlite3-dev automake1.11 libexpat1-dev \
+  clang-format-3.6 binutils binutils-gold ccache html2text locales pkg-config
+
+RUN apt-get -q -y install qt53base qt53websockets liblua5.2-dev libxml2-dev lua-lpeg-dev libgl1-mesa-dev
+ENV QMAKE=/opt/qt53/bin/qmake
+
+RUN locale-gen en_US.UTF-8
+RUN update-locale LANG=en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
+
+RUN chmod u+s /sbin/ifconfig
+
+RUN update-alternatives --remove-all cpp \
+  && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 20 \
+  && update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-4.9 20 \
+  && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 20
+
+RUN mkdir /home/developer
+RUN cp /root/.zshrc /home/developer/.zshrc
+RUN cp -r /root/.oh-my-zsh /home/developer/.oh-my-zsh
+RUN sed 's/ZSH="\/root/ZSH="\/home\/developer/' -i /home/developer/.zshrc
+RUN sed 's/robbyrussell/bira/' -i /home/developer/.zshrc
+
+COPY entrypoint.sh /usr/bin/
+
+ENTRYPOINT ["/bin/bash", "-e", "/usr/bin/entrypoint.sh"]
+
+CMD ["/bin/bash", "-c", "cd $HOME && zsh"]
