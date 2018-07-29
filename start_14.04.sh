@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-HOST_WORK_FOLDER=~/workspace/01
+HOST_WORK_FOLDER=~/workspace/$1
 CONTAINER_WORK_FOLDER=/home/developer/sdl
 
 docker run \
