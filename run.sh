@@ -106,15 +106,53 @@ clean_backup() {
   rm -f ${SDL_FOLDER}/_log4cxx.properties
 }
 
+await() {
+  local TIMEOUT=${@:1:1}
+  local PIDS=${@:2}
+  local TIME_LEFT=0
+  while true
+  do
+    local TIMEOUT_EXPIRED=$(( $TIMEOUT < $TIME_LEFT ))
+    for PID in ${PIDS}
+    do
+      if ! kill -0 ${PID} &>/dev/null
+      then
+        PIDS=`echo ${PIDS} | sed -e "s/${PID}//g"`
+      fi
+    done
+    
+    if [ -z ${PIDS} ]
+    then
+      echo "Done: ${PIDS}"
+      return 0
+    fi
+     
+    if ! (( TIMEOUT_EXPIRED ))
+    then
+      TIME_LEFT=$(( TIME_LEFT + 1 ))
+      sleep 1
+    else
+      echo "Timeout ($TIMEOUT sec) expired. Force killing: ${PIDS} .."
+      for PID in ${PIDS}
+      do
+        kill -9 ${PID}
+        sleep 0.5
+      done
+    fi
+  done   
+}
+
 kill_sdl() {
-  sleep 0.2
-  PID="$(ps -ef | grep -e "^$(whoami).*smartDeviceLinkCore" | grep -v grep | awk '{print $2}')"
+  local PROCESS_NAME=smartDeviceLinkCore
+  local PID=$(pgrep --full $PROCESS_NAME)
   if [ -n "$PID" ]; then
-    log "SDL is running, PID: $PID"
-    log "Killing SDL"
-    kill -9 $PID
+    log "'$PROCESS_NAME' is running, PID: $PID"
+    log "Polite terminating '$PROCESS_NAME'.."
+    kill -s SIGTERM $PID
+    local TERMINATE_TIMEOUT=5 # sec
+    await $TERMINATE_TIMEOUT $PID
+    log "'$PROCESS_NAME' have been terminated."
   fi
-  sleep 0.2
 }
 
 create_log_folder() {
@@ -225,7 +263,7 @@ run() {
 
 process() {
   ID=0
-  EXT=${TEST_TARGET: -3}
+  local EXT=${TEST_TARGET: -3}
   if [ $EXT = "txt" ]; then
     NUM_OF_SCRIPTS=$(cat $TEST_TARGET | egrep -v -c '^;')
     while read -r ROW
