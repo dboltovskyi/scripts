@@ -1,5 +1,5 @@
 ## Description
-This repository consists of a few scripts. They allow to build docker image and to run test jobs in docker container.
+This repository consists of a few scripts. They allow to build docker image for testing with ATF
 
 ## Steps
 
@@ -19,10 +19,10 @@ There should be the following:
 REPOSITORY          TAG
 ubuntu_14.04        01
 ```
-6. Get back to the root of the repo and go to ```jobs``` folder
-7. Create ```reports``` sub-folder
-8. Run any job (ex. ```dev_smoke.sh```)
-9. Check results in ```reports``` folder
+6. Run docker container:
+```
+start_14.04.sh
+```
 
-## Notes
-Container requires at most 5Gb of free RAM for the processing
+## Notes:
+1. Steps are described for Ubuntu 14.04, but it's possible to build 16.04 as well

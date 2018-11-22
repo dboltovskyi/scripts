@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
+HOST_WORK_FOLDER=~/workspace/$1
+CONTAINER_WORK_FOLDER=/home/developer/sdl
 
 docker run \
-	-it \
-	--cap-add NET_ADMIN \
-	-e THIRD_PARTY_INSTALL_PREFIX=/home/3rd_party \
-	-e THIRD_PARTY_INSTALL_PREFIX_ARCH=/home/3rd_party \
-	-e LD_LIBRARY_PATH=/home/3rd_party/lib:. \
-	ubuntu_16.04:01
+  -it \
+  --rm \
+  --cap-add NET_ADMIN \
+  -e LOCAL_USER_ID=$(id -u) \
+  -v $HOST_WORK_FOLDER:$CONTAINER_WORK_FOLDER \
+  ubuntu_16.04:01
