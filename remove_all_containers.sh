@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-docker rm $(docker ps -aq)
+docker rm --force $(docker ps -aq)
