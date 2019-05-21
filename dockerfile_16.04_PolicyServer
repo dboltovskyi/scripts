@@ -1,0 +1,44 @@
+FROM ubuntu:xenial
+
+RUN apt-get update
+
+RUN apt-get install -y git
+
+RUN apt-get install -y wget
+
+RUN apt-get install -y zsh \
+  && chsh -s $(which zsh) \
+  && bash -c "$(wget https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"
+
+RUN apt-get install -y software-properties-common python-software-properties
+
+RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test
+
+RUN cd /usr/local/share/ca-certificates \
+  && mkdir lux \
+  && cd lux \
+  && wget -nv "http://cert.luxoft.com/Luxoft-Root-CA.crt" \
+  && update-ca-certificates
+
+RUN apt-get update
+
+RUN apt-get -q -y install locales sudo
+
+RUN locale-gen en_US.UTF-8
+RUN update-locale LANG=en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
+
+RUN mkdir /home/developer
+RUN cp /root/.zshrc /home/developer/.zshrc
+RUN cp -r /root/.oh-my-zsh /home/developer/.oh-my-zsh
+RUN sed 's/ZSH="\/root/ZSH="\/home\/developer/' -i /home/developer/.zshrc
+RUN sed 's/robbyrussell/bira/' -i /home/developer/.zshrc
+
+RUN apt-get -q -y install nodejs-legacy
+RUN apt-get -q -y install npm
+
+COPY entrypoint.sh /usr/bin/
+
+ENTRYPOINT ["/bin/bash", "-e", "/usr/bin/entrypoint.sh"]
+
+CMD ["/bin/bash", "-c", "cd $HOME && zsh"]
