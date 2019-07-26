@@ -30,8 +30,12 @@ RUN sed 's/robbyrussell/bira/' -i /home/developer/.zshrc
 
 RUN apt-get -q -y install lighttpd jq moreutils
 
+RUN apt-get -q -y install cmake libssl-dev \
+  libudev-dev sqlite3 libsqlite3-dev automake1.11 libexpat1-dev \
+  clang-format-3.6 binutils binutils-gold ccache html2text pkg-config net-tools
+
 COPY entrypoint.sh /usr/bin/
 
 ENTRYPOINT ["/bin/bash", "-e", "/usr/bin/entrypoint.sh"]
 
-CMD ["/bin/bash", "-c", "cd $HOME/sdl/bin && ./start.sh"]
+CMD ["/bin/bash", "-c", "cd $HOME/sdl && zsh"]
