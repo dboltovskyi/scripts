@@ -1,0 +1,56 @@
+FROM ubuntu:bionic
+
+RUN apt-get update
+
+RUN apt-get -q -y install locales sudo wget git apt-utils
+
+RUN locale-gen en_US.UTF-8
+RUN update-locale LANG=en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
+
+# ZSH
+RUN apt-get install -y zsh \
+  && chsh -s $(which zsh) \
+  && bash -c "$(wget https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"
+RUN mkdir /home/developer
+RUN cp /root/.zshrc /home/developer/.zshrc
+RUN cp -r /root/.oh-my-zsh /home/developer/.oh-my-zsh
+RUN sed 's/ZSH="\/root/ZSH="\/home\/developer/' -i /home/developer/.zshrc
+RUN sed 's/robbyrussell/bira/' -i /home/developer/.zshrc
+
+# SDL build dependencies
+RUN apt-get -q -y install cmake gcc-7 g++-7 python2.7-minimal libssl1.0-dev libusb-1.0-0-dev libudev-dev libsqlite3-dev libbluetooth-dev
+
+RUN update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 20
+
+RUN ln -s /usr/bin/python2.7 /usr/bin/python \
+  && ln -s /usr/bin/python2.7 /usr/bin/python2
+
+RUN apt-get -q -y install python3-pip python3-setuptools
+
+RUN python3 -m pip install xmlschema
+
+# ATF build dependencies
+RUN apt-get -q -y install qt5-default libqt5websockets5-dev liblua5.2-dev libxml2-dev lua5.2
+
+# ATF run dependencies
+RUN apt-get -q -y install net-tools iproute2
+
+# Install latest cmake
+RUN apt-get -q -y remove cmake --purge
+ADD https://cmake.org/files/v3.16/cmake-3.16.3-Linux-x86_64.sh /cmake-3.16.3-Linux-x86_64.sh
+RUN mkdir /opt/cmake
+RUN sh /cmake-3.16.3-Linux-x86_64.sh --prefix=/opt/cmake --skip-license
+RUN ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
+RUN rm /cmake-3.16.3-Linux-x86_64.sh
+RUN cmake --version
+
+# Set permissions
+RUN chmod u+s /sbin/ifconfig /sbin/ip
+
+# Entrypoint
+COPY entrypoint.sh /usr/bin/
+
+ENTRYPOINT ["/bin/bash", "-e", "/usr/bin/entrypoint.sh"]
+
+CMD ["/bin/bash", "-c", "cd $HOME && zsh"]

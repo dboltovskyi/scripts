@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-docker rmi $(docker images -aq)
+docker rmi -f $(docker images -aq)
